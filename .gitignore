@@ -31,4 +31,4 @@ venv
 *.jpg
 
 # model
-app/pretrained_models*.pth
+app/pretrained_models/*.pth
