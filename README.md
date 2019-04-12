@@ -3,7 +3,7 @@
 ## usage
 
 * server: flask, ngrok
-* model: [CartoonGAN-Test-Pytorch-Torch](https://github.com/Yijunmaverick/CartoonGAN-Test-Pytorch-Torch))
+* model: [CartoonGAN-Test-Pytorch-Torch](https://github.com/Yijunmaverick/CartoonGAN-Test-Pytorch-Torch)
 
 ## execute
 
