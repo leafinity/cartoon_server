@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 import os
-import io
 from enum import Enum
-import numpy as np
 from PIL import Image
 import torch
 import torchvision.transforms as transforms
@@ -14,7 +12,7 @@ from networks.cartoonTransformer import CartoonTransformer as ct
 from utils import *
 
 _model_path = 'pretrained_models'
-_gpu = -1
+_gpu = 0
 _load_size = 400
 
 class Style(Enum):
@@ -53,23 +51,17 @@ class CartoonTransformer(object):
 
         return image.resize((h, w), Image.BICUBIC)
 
-    def transform(self, extension, image_list, style=Style.HAYAO):
+    def transform(self, image, style=Style.HAYAO):
         ''' Transform photo to cartoon
 
             params:
-                extension: file extension, accept values: png, jpg.
-                imagefile: File from request.
-                style Style: target cartoon Style, 
+                image: PIL Image object.
+                style: target cartoon Style, 
                     passible values: Style.HAYAO, Style.HOSODA, Style.PAPRIKA, Style.SHINKAI,
                     default: Style.HAYAO.
 
-            return tuple of file extension and trainsformed image.
+            return trainsformed PIL image object.
         '''
-
-        if extension not in ['png', 'jpg']:
-            return None
-
-        image = Image.fromarray(np.uint8(image_list))
 
         # load model
         self._transformer.load_state_dict(torch.load(os.path.join(_model_path, 
@@ -84,7 +76,7 @@ class CartoonTransformer(object):
             self._transformer.float()
 
         # load image
-        input_image = image#.convert("RGB")
+        input_image = image
         input_image = self.resize_image(input_image, _load_size)
         input_image = np.array(input_image)
         # RGB -> GBR
@@ -110,12 +102,4 @@ class CartoonTransformer(object):
         # to png byte
         output_image = transforms.ToPILImage()(output_image)
 
-        return extension, np.array(output_image).tolist()
-
-if __name__ == '__main__':
-    for s in Style:
-        ext, image = CartoonTransformer().transform('png', open('test.png', 'rb'), s)
-
-        f = open('output%s.%s' %(s.name, ext), 'wb')
-        f.write(image)
-        f.close()
+        return output_image

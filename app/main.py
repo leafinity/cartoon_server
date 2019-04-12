@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 
-import io
-import uuid
-import numpy as np
-from PIL import Image
 from flask import Flask, request, send_file
 
-from celery_queue import workers
 from utils import *
+from models.cartoon import CartoonTransformer, Style
+
 
 app = Flask(__name__)
 
@@ -15,9 +12,8 @@ app = Flask(__name__)
 def hello():
     return "Hello World!"
 
-
-@app.route('/cartoon_transform/<style>', methods=['POST'])
-def cartoon_transform(style):
+@app.route('/sync_cartoon_transform/<style>', methods=['POST'])
+def sync_cartoon_transform(style):
     valid_ext = ['jpg', 'png']
     valid_style = ['hayao', 'hosoda', 'paprika', 'shinkai']
 
@@ -34,45 +30,8 @@ def cartoon_transform(style):
     if not allowed_file(file.filename, valid_ext):
         return send_error_response('Only accept jpg and png files')
 
-    try:
-        image = Image.open(file.stream).convert("RGB")
-        image = np.array(image)
-        # file.stream
-        task = workers.transform_photo.apply_async(
-            args=[get_file_extension(file.filename), image.tolist(), style], 
-        )
-    except Exception as e:
-        print('error', e)
-        return 'failed', 500
-
-    return task.id
-
-@app.route('/cartoon_transform/check_status/<task_id>', methods=['GET'])
-def check_cartoon_transform_status(task_id):
-    res = workers.celery.AsyncResult(task_id)
-
-    if res.failed():
-        return send_error_response('task failed')
-
-    if not res.ready():
-        return  send_json_response({'finished': False})
-
-    return  send_json_response({'finished': True})
-
-
-@app.route('/cartoon_transform/download_image/<task_id>', methods=['GET'])
-def download_cartoon_transformed_image(task_id):
-    res = workers.celery.AsyncResult(task_id)
-
-    if not res.ready():
-        return  'task hasn\'t been finished', 500
-
-    ext, image_list = res.get()
-    output_image = Image.fromarray(np.uint8(image_list))
-
-    image_bytes = io.BytesIO()
-    output_image.save(image_bytes, format=image_format[ext])
-    # image_bytes = image_bytes.getvalue()
-    image_bytes.seek(0)
+    image =  CartoonTransformer().transform(file2image(file.stream), Style[style.upper()])
+    ext = get_file_extension(file.filename)
+    image_bytes = image2file(ext, image)
 
     return send_file(image_bytes, attachment_filename='result.' + ext, mimetype='image/%s' % ext)

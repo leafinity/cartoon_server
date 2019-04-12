@@ -1,34 +1,30 @@
-import time
-import json
+import argparse
 import requests
+ 
 
-url = 'http://127.0.0.1:5000/'
-files = {'file': open('test.jpg','rb')}
+parser = argparse.ArgumentParser()
 
-r = requests.post(url + 'cartoon_transform/shinkai', files=files)
+parser.add_argument("--testfile", help="path to test image file")
+parser.add_argument("--hostname", help="server hostname")
+
+args = parser.parse_args()
+
+files = {'file': open(args.testfile,'rb')}
+
+url = ''
+if args.hostname[:4] != 'http':
+    url += 'http://'
+url += args.hostname 
+if args.hostname[-1] != '/':
+    url += '/'
+
+url += 'sync_cartoon_transform/hosoda'
+
+print(url)
+
+r = requests.post(url, files=files)
 if r.status_code == 200:
-    task_id = r.text
-    print(task_id)
-else:
-    print(r.status_code)
-    exit()
-
-for i in range(30):
-    r = requests.get(url + 'cartoon_transform/check_status/%s' % task_id)
-    if r.status_code == 200:
-        finished = json.loads(r.text)['finished']
-
-        if not finished:
-            time.sleep(5)
-            print('task hasn\'t been finished')
-        else:
-            print('>>> task finished')
-            r = requests.get(url + 'cartoon_transform/download_image/%s' % task_id)
-            with open('test_recieved.jpg', 'wb') as f:
-                f.write(r.content)
-            break
-    else:
-        print('something wrong')
-        break
+    with open('test_recieved_jupyter.jpg', 'wb') as f:
+        f.write(r.content)
 else:
     print(r.status_code)

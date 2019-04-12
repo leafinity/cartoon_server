@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+import io
 from flask import jsonify
+from PIL import Image
 
 image_format = {
     'jpg': 'jpeg',
@@ -40,3 +42,14 @@ def allowed_file(filename, allow_extensions):
         return get_file_extension(filename) in allow_extensions
     else:
         return False
+
+def file2image(file):
+    return Image.open(file).convert("RGB")
+
+
+def image2file(ext, image):
+    image_bytes = io.BytesIO()
+    image.save(image_bytes, format=image_format[ext])
+    image_bytes.seek(0)
+    return image_bytes
+
