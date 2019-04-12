@@ -24,7 +24,6 @@ def cartoon_transform(style):
     if style.lower() not in valid_style:
         return send_error_response('Doesn\'t support style %s' % style)
 
-    print(list(request.files.keys()))
     if 'file' not in request.files:
         return send_error_response('No file part')
     file = request.files['file']
@@ -73,6 +72,7 @@ def download_cartoon_transformed_image(task_id):
 
     image_bytes = io.BytesIO()
     output_image.save(image_bytes, format=image_format[ext])
-    image_bytes = image_bytes.getvalue()
+    # image_bytes = image_bytes.getvalue()
+    image_bytes.seek(0)
 
-    return send_file(io.BytesIO(image_bytes), attachment_filename='result.' + ext, mimetype='image/%s' % ext)
+    return send_file(image_bytes, attachment_filename='result.' + ext, mimetype='image/%s' % ext)

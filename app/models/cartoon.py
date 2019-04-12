@@ -15,7 +15,7 @@ from utils import *
 
 _model_path = 'pretrained_models'
 _gpu = -1
-_load_size = 450
+_load_size = 400
 
 class Style(Enum):
     '''cartoon style for tansformer'''

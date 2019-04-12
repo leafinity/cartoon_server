@@ -1,6 +1,5 @@
 import time
 import os
-from flask import Flask
 from celery import Celery
 from models.cartoon import CartoonTransformer, Style
 
