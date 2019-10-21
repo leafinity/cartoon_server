@@ -20,4 +20,4 @@ torch==1.0.1.post2
 torchvision==0.2.1
 urllib3==1.24.1
 vine==1.2.0
-Werkzeug==0.14.1
+Werkzeug==0.15.3
